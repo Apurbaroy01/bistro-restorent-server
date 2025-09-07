@@ -30,20 +30,31 @@ async function run() {
 
         const menuCollection = client.db("bistro_DB").collection("menu");
         const reviewsCollection = client.db("bistro_DB").collection("reviews");
-        
+        const cardsCollection = client.db("bistro_DB").collection("cards");
 
-        app.get('/menu', async(req, res) => {
-            const result=await menuCollection.find().toArray();
+
+
+
+        app.get('/menu', async (req, res) => {
+            const result = await menuCollection.find().toArray();
             res.send(result)
 
         });
 
 
-        app.get('/reviews', async(req, res) => {
-            const result=await reviewsCollection.find().toArray();
+        app.get('/reviews', async (req, res) => {
+            const result = await reviewsCollection.find().toArray();
             res.send(result)
 
+        });
+
+        app.get('/cards', async (req, res) => {
+            const cartItem = req.body
+            const result = await cardsCollection.insertOne(cartItem)
+            res.send(result)
         })
+
+
     }
     catch (error) {
         console.error("error❌", error)
