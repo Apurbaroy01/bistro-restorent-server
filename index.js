@@ -28,12 +28,17 @@ async function run() {
         await client.connect();
         console.log("You successfully connected to MongoDB!✅");
 
+        const userCollection = client.db("bistro_DB").collection("users");
         const menuCollection = client.db("bistro_DB").collection("menu");
         const reviewsCollection = client.db("bistro_DB").collection("reviews");
         const cardsCollection = client.db("bistro_DB").collection("cards");
 
 
-
+        app.post('/users', async(req, res) => {
+            const user= req.body
+            const result=await userCollection.insertOne(user)
+            res.send(result);  
+        })
 
         app.get('/menu', async (req, res) => {
             const result = await menuCollection.find().toArray();
@@ -47,10 +52,10 @@ async function run() {
             res.send(result)
 
         });
-        
+
         app.get('/cards', async (req, res) => {
-            const email =req.query.email;
-            const query ={email: email}
+            const email = req.query.email;
+            const query = { email: email }
             const result = await cardsCollection.find(query).toArray()
             res.send(result)
         })
@@ -60,11 +65,11 @@ async function run() {
             const result = await cardsCollection.insertOne(cartItem)
             res.send(result)
         });
-        
+
         app.delete('/cards/:id', async (req, res) => {
             const id = req.params.id
             console.log(id);
-            const query={_id: new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const result = await cardsCollection.deleteOne(query)
             res.send(result)
         })
