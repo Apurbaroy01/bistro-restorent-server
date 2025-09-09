@@ -34,10 +34,16 @@ async function run() {
         const cardsCollection = client.db("bistro_DB").collection("cards");
 
 
-        app.post('/users', async(req, res) => {
-            const user= req.body
-            const result=await userCollection.insertOne(user)
-            res.send(result);  
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            const query = { email: user.email }
+            const existinguser = await userCollection.findOne(query)
+            if (existinguser) {
+                return res.send({ message: "user already exits", user: null });
+            }
+
+            const result = await userCollection.insertOne(user)
+            res.send(result);
         })
 
         app.get('/menu', async (req, res) => {
