@@ -35,11 +35,27 @@ async function run() {
         const cardsCollection = client.db("bistro_DB").collection("cards");
 
 
-        app.post('/jwt', (req, res) =>{
+        app.post('/jwt', (req, res) => {
             const user = req.body;
-            const token = jwt.sign(user, process.env.ACCESS_TOKEN, {expiresIn: '1h'})
-            res.send({token});
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '1h' })
+            res.send({ token });
         })
+        // middleware
+        const verifyToken = (req, res, next) => {
+            console.log('inside vrtyfi token', req.headers.authorization);
+            if (!req.headers.authorization) {
+                return res.status(401).send({ error: true, message: 'forbiden access' })
+            }
+            const token = req.headers.authorization.split(' ')[1];
+
+            jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+                if (err) {
+                    return res.status(401).send({ error: true, message: 'forbiden access' })
+                }
+                req.decoded = decoded;
+                next();
+            });
+        }
 
 
         app.post('/users', async (req, res) => {
@@ -54,7 +70,7 @@ async function run() {
             res.send(result);
         });
 
-        app.patch('/users/admin/:id', async(req, res) => {
+        app.patch('/users/admin/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) }
             const updateDoc = {
@@ -65,12 +81,13 @@ async function run() {
             const result = await userCollection.updateOne(filter, updateDoc);
             res.send(result)
         });
-        app.get('/users', async(req, res) => {
+        app.get('/users', verifyToken, async (req, res) => {
+
             const result = await userCollection.find().toArray();
             res.send(result)
         });
 
-        app.delete('/users/:id', async(req, res) => {
+        app.delete('/users/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
             const result = await userCollection.deleteOne(query)
